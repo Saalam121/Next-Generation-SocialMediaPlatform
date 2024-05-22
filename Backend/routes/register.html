@@ -119,6 +119,23 @@
 </head>
 
 <body>
+
+
+    <div class="background">
+        <div class="shape"></div>
+        <div class="shape"></div>
+    </div>
+    <form id="registrationForm">
+        <h3>Register Here</h3>
+        <label for="username">Username</label>
+        <input type="text" placeholder="Username" id="username" name="username" required>
+        <label for="email">Email</label>
+        <input type="email" placeholder="Email" id="email" name="email" required>
+        <label for="password">Password</label>
+        <input type="password" placeholder="Password" id="password" name="password" required>
+        <button type="submit">Register</button>
+    </form>
+
     <script>
         document.querySelector('form').addEventListener('submit', function (event) {
             event.preventDefault();
@@ -126,7 +143,7 @@
             const data = {};
             formData.forEach((value, key) => { data[key] = value; });
 
-            fetch('/api/users/register', {
+            fetch('/api/auth/signup', {  // Updated URL
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -135,30 +152,18 @@
             })
                 .then(response => response.json())
                 .then(data => {
-                    console.log('Success:', data);
+                    if (data.success) {
+                        alert('User registered successfully');
+                        window.location.href = '/api/login'; // Redirect to login page
+                    } else {
+                        console.error('Registration failed:', data.message);
+                    }
                 })
                 .catch((error) => {
                     console.error('Error:', error);
                 });
         });
     </script>
-
-    <div class="background">
-        <div class="shape"></div>
-        <div class="shape"></div>
-    </div>
-    <form>
-        <h3>Register Here</h3>
-        <label for="username">Username</label>
-        <input type="text" placeholder="Username" id="username" name="username" required>
-        <label for="email">Email</label>
-        <input type="email" placeholder="Email" id="email" name="email" required>
-        <label for="password">Password</label>
-        <input type="password" placeholder="Password" id="password" name="password" required>
-        <label for="age">Age</label>
-        <input type="number" placeholder="Age" id="age" name="age" required>
-        <button type="submit">Register</button>
-    </form>
 </body>
 
 </html>

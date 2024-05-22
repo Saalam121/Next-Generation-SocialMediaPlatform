@@ -2,11 +2,13 @@ const express = require('express');
 const router = express.Router();
 const path = require('path');
 const jwt = require('jsonwebtoken');
+const bodyParser = require('body-parser');
 
 const jwtSecret = 'secret_key';
 
 const user = require('../models/user.model');
 
+router.use(bodyParser.json());
 
 router.get('/signup', (req, res) => {
     res.sendFile(path.join(__dirname, 'register.html'));
@@ -16,6 +18,8 @@ router.get('/login', (req, res) => {
     res.sendFile(path.join(__dirname, 'login.html'));
 
 });
+
+
 
 router.post('/auth/signup', async (req, res) => {
     const { username, password, email } = req.body;
@@ -29,20 +33,15 @@ router.post('/auth/signup', async (req, res) => {
         const newUser = new user({ username, password, email });
         await newUser.save();
         const token = jwt.sign({ userId: newUser._id }, jwtSecret, { expiresIn: '1h' });
-        res.status(201).send({ message: "User registered successfully", user: newUser, token: token });
+
+        res.status(201).send({ success: true, message: "User registered successfully", user: newUser, token: token });
     } catch (error) {
-        res.status(400).send({ message: "Error registering user", error: error.message });
+        res.status(400).send({ success: false, message: "Error registering user", error: error.message });
     }
 });
 
 router.post('/auth/login', async (req, res) => {
     const { username, password } = req.body;
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1];
-
-    if (!token) {
-        return res.status(401).send({ message: "No token provided" });
-    }
 
     try {
         const foundUser = await user.findOne({ username: username });
@@ -50,24 +49,19 @@ router.post('/auth/login', async (req, res) => {
             return res.status(404).send({ message: "User not found" });
         }
 
-
         if (foundUser.password !== password) {
             return res.status(401).send({ message: "Invalid credentials" });
         }
 
+        // Generate a new token
+        const newToken = jwt.sign({ userId: foundUser._id }, jwtSecret, { expiresIn: '1h' });
 
-        jwt.verify(token, jwtSecret, (err, decoded) => {
-            if (err) {
-                return res.status(403).send({ message: "Invalid token" });
-            }
+        // Update the user's token in the database
+        await user.findByIdAndUpdate(foundUser._id, { token: newToken });
 
-            if (decoded.userId !== foundUser._id.toString()) {
-                return res.status(403).send({ message: "Token does not match user details" });
-            }
-            res.send({ message: "User and token verified successfully" });
-        });
+        res.send({ message: "Login successful", token: newToken });
     } catch (error) {
-        res.status(500).send({ message: "Error verifying user", error: error.message });
+        res.status(500).send({ message: "Error during login", error: error.message });
     }
 });
 

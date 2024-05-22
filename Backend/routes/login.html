@@ -2,7 +2,7 @@
 <html lang="en">
 
 <head>
-    <title>User Registration Form</title>
+    <title>User Login Form</title>
     <link rel="preconnect" href="https://fonts.gstatic.com">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;600&display=swap" rel="stylesheet">
@@ -119,14 +119,29 @@
 </head>
 
 <body>
-    <script>
-        document.querySelector('form').addEventListener('submit', function (event) {
-            event.preventDefault();
-            const formData = new FormData(this);
-            const data = {};
-            formData.forEach((value, key) => { data[key] = value; });
 
-            fetch('/api/users/register', {
+    <div class="background">
+        <div class="shape"></div>
+        <div class="shape"></div>
+    </div>
+    <form id="loginForm">
+        <h3>Welcome Again!</h3>
+
+        <label for="username">Username</label>
+        <input type="text" placeholder="Username" id="username" name="username" required>
+        <label for="password">Password</label>
+        <input type="password" placeholder="Password" id="password" name="password" required>
+        <button type="submit">Login</button>
+    </form>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', function (event) {
+            event.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const data = { username, password };
+
+            fetch('/api/auth/login', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -135,27 +150,18 @@
             })
                 .then(response => response.json())
                 .then(data => {
-                    console.log('Success:', data);
+                    if (data.token) {
+                        alert('Token generated: ' + data.token);
+                    } else {
+                        alert('Login failed: ' + data.message);
+                    }
                 })
                 .catch((error) => {
                     console.error('Error:', error);
+                    alert('An error occurred during login.');
                 });
         });
     </script>
-
-    <div class="background">
-        <div class="shape"></div>
-        <div class="shape"></div>
-    </div>
-    <form>
-        <h3>Welcome Again!</h3>
-
-        <label for="email">Email</label>
-        <input type="email" placeholder="Email" id="email" name="email" required>
-        <label for="password">Password</label>
-        <input type="password" placeholder="Password" id="password" name="password" required>
-        <button type="submit">Login</button>
-    </form>
 </body>
 
 </html>

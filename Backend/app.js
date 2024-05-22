@@ -9,7 +9,8 @@ const path = require('path');
 app.use(express.json());
 
 
-mongoose.connect('mongodb://localhost:27017/PROJECTDB', { useNewUrlParser: true, useUnifiedTopology: true })
+
+mongoose.connect('mongodb://localhost:27017/PROJECTDB')
     .then(() => {
         console.log('Connected to MongoDB');
     })
